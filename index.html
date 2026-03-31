@@ -84,13 +84,13 @@
 <!-- ===== SCAN PAGE ===== -->
 <div id="page-scan" class="page-content min-h-full pt-16">
   <div class="min-h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-6 px-4" style="min-height:calc(100vh - 64px)">
-    <div class="max-w-7xl mx-auto space-y-5">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 fade-in-up items-start">
 
-      <!-- ═══════════════════════════════════════════════
-           BARIS ATAS — Scan Card (ukuran normal asli)
-      ═══════════════════════════════════════════════ -->
-      <div class="flex justify-center fade-in-up">
-        <div class="w-full max-w-lg">
+        <!-- ═══════════════════════════════════════════════
+             KIRI — Scan Card + Riwayat 3 Scan Terbaru
+        ═══════════════════════════════════════════════ -->
+        <div class="space-y-4">
 
           <!-- Scan Card Utama -->
           <div class="glass-card rounded-3xl p-8 shadow-2xl">
@@ -147,7 +147,7 @@
           </div>
 
           <!-- Statistik Mini -->
-          <div class="mt-5 glass-card rounded-2xl p-4">
+          <div class="glass-card rounded-2xl p-4">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
@@ -170,70 +170,65 @@
             </div>
           </div>
 
-        </div>
-      </div><!-- end baris atas -->
+          <!-- Riwayat Scan Terbaru — gabung di bawah Scan Card -->
+          <div class="glass-card rounded-2xl shadow-xl overflow-hidden">
+            <!-- Header -->
+            <div class="px-5 py-3 border-b border-slate-200 flex items-center gap-3 bg-white/60">
+              <div class="w-7 h-7 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-bold text-slate-800 text-sm">Riwayat Scan Terbaru</h3>
+                <p class="text-xs text-slate-400">3 scan terakhir hari ini</p>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span class="text-xs text-emerald-600 font-bold">Live</span>
+              </div>
+            </div>
+            <!-- Daftar 3 scan terakhir -->
+            <div id="recent-scan-list" class="divide-y divide-slate-100">
+              <div class="flex flex-col items-center justify-center py-8 text-slate-400">
+                <svg class="w-8 h-8 mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <p class="text-sm">Belum ada scan hari ini</p>
+              </div>
+            </div>
+          </div>
 
-      <!-- ═══════════════════════════════════════════════
-           BARIS BAWAH — Status Per Kelas + Riwayat Scan
-      ═══════════════════════════════════════════════ -->
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-5 fade-in-up" style="animation-delay:0.2s">
+        </div><!-- end kolom kiri -->
 
-        <!-- ── Status Absensi Per Kelas (3/5 lebar) ── -->
-        <div class="lg:col-span-3 glass-card rounded-2xl shadow-xl overflow-hidden">
-          <!-- Header -->
-          <div class="px-5 py-3.5 border-b border-slate-200 flex items-center gap-3 bg-white/60">
-            <div class="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- ═══════════════════════════════════════════════
+             KANAN — Status Absensi Per Kelas (compact)
+        ═══════════════════════════════════════════════ -->
+        <div class="glass-card rounded-2xl shadow-xl overflow-hidden">
+          <!-- Header compact -->
+          <div class="px-4 py-3 border-b border-slate-200 flex items-center gap-2 bg-white/60">
+            <div class="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
               </svg>
             </div>
-            <div class="flex-1">
-              <h3 class="font-bold text-slate-800 text-sm">Status Absensi Per Kelas</h3>
-              <p class="text-xs text-slate-400">Semua kelas tampil otomatis tanpa scroll</p>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-bold text-slate-800 text-sm">Status Per Kelas</h3>
+              <p class="text-xs text-slate-400">Semua kelas hari ini</p>
             </div>
-            <span id="class-count-badge" class="text-xs font-bold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">0 Kelas</span>
+            <span id="class-count-badge" class="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full flex-shrink-0">0 Kelas</span>
           </div>
-          <!-- Grid Kelas — auto wrap, TIDAK ada scroll -->
-          <div id="class-status-list" class="p-4">
-            <div class="flex flex-col items-center justify-center py-10 text-slate-400">
-              <svg class="w-10 h-10 mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          <!-- Grid Kelas compact -->
+          <div id="class-status-list" class="p-2.5">
+            <div class="flex flex-col items-center justify-center py-8 text-slate-400">
+              <svg class="w-8 h-8 mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
               <p class="text-sm">Belum ada data kelas</p>
             </div>
           </div>
-        </div>
+        </div><!-- end kolom kanan -->
 
-        <!-- ── Riwayat Scan Terbaru (2/5 lebar) ── -->
-        <div class="lg:col-span-2 glass-card rounded-2xl shadow-xl overflow-hidden flex flex-col">
-          <!-- Header -->
-          <div class="px-5 py-3.5 border-b border-slate-200 flex items-center gap-3 bg-white/60 flex-shrink-0">
-            <div class="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </div>
-            <div class="flex-1">
-              <h3 class="font-bold text-slate-800 text-sm">Riwayat Scan Terbaru</h3>
-              <p class="text-xs text-slate-400">15 scan terakhir hari ini</p>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="relative flex h-2 w-2">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span class="text-xs text-emerald-600 font-bold">Live</span>
-            </div>
-          </div>
-          <!-- Daftar scan -->
-          <div id="recent-scan-list" class="divide-y divide-slate-100 overflow-y-auto" style="max-height:420px">
-            <div class="flex flex-col items-center justify-center py-12 text-slate-400">
-              <svg class="w-10 h-10 mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-              <p class="text-sm">Belum ada scan hari ini</p>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- end baris bawah -->
-
+      </div><!-- end grid utama -->
     </div><!-- end max-w-7xl -->
   </div>
 </div>
@@ -1121,9 +1116,7 @@ function renderClassStatus() {
 
   // Kartu kelas dalam grid — otomatis wrap, TIDAK ada scroll
   // grid-cols otomatis menyesuaikan jumlah kelas
-  const cols = classes.length <= 3 ? classes.length :
-               classes.length <= 6 ? 3 :
-               classes.length <= 9 ? 3 : 4;
+  const cols = classes.length <= 1 ? 1 : 2;
 
   const cards = classes.map(cls => {
     const totalSiswa = students.filter(s => s.class_name === cls.class_name).length;
@@ -1139,39 +1132,39 @@ function renderClassStatus() {
     const cardBdr   = pct >= 80 ? 'border-emerald-200 bg-emerald-50/40' : pct >= 50 ? 'border-amber-200 bg-amber-50/40' : 'border-red-200 bg-red-50/30';
 
     return `
-    <div class="border ${cardBdr} rounded-xl p-3 flex flex-col gap-2">
+    <div class="border ${cardBdr} rounded-xl p-2 flex flex-col gap-1.5">
       <!-- Nama kelas + % -->
       <div class="flex items-start justify-between gap-1">
-        <span class="font-bold text-slate-800 text-sm leading-tight">${cls.class_name}</span>
-        <span class="text-base font-extrabold ${pctColor} leading-none flex-shrink-0">${pct}%</span>
+        <span class="font-bold text-slate-800 text-xs leading-tight">${cls.class_name}</span>
+        <span class="text-sm font-extrabold ${pctColor} leading-none flex-shrink-0">${pct}%</span>
       </div>
       <!-- Progress bar -->
-      <div class="w-full bg-slate-200 rounded-full h-1.5">
-        <div class="${barColor} h-1.5 rounded-full transition-all duration-700" style="width:${pct}%"></div>
+      <div class="w-full bg-slate-200 rounded-full h-1">
+        <div class="${barColor} h-1 rounded-full transition-all duration-700" style="width:${pct}%"></div>
       </div>
       <!-- 4 stat boxes -->
       <div class="grid grid-cols-4 gap-1">
         <div class="bg-white rounded-lg py-1 text-center border border-emerald-100">
-          <p class="text-sm font-bold text-emerald-600 leading-none">${tepatWaktu}</p>
-          <p class="text-xs text-emerald-500 leading-none mt-0.5">Tepat</p>
+          <p class="text-xs font-bold text-emerald-600 leading-none">${tepatWaktu}</p>
+          <p class="text-[9px] text-emerald-500 leading-none mt-0.5">Tepat</p>
         </div>
         <div class="bg-white rounded-lg py-1 text-center border border-amber-100">
-          <p class="text-sm font-bold text-amber-500 leading-none">${terlambat}</p>
-          <p class="text-xs text-amber-500 leading-none mt-0.5">Lambat</p>
+          <p class="text-xs font-bold text-amber-500 leading-none">${terlambat}</p>
+          <p class="text-[9px] text-amber-500 leading-none mt-0.5">Lambat</p>
         </div>
         <div class="bg-white rounded-lg py-1 text-center border border-slate-200">
-          <p class="text-sm font-bold text-slate-400 leading-none">${belum}</p>
-          <p class="text-xs text-slate-400 leading-none mt-0.5">Belum</p>
+          <p class="text-xs font-bold text-slate-400 leading-none">${belum}</p>
+          <p class="text-[9px] text-slate-400 leading-none mt-0.5">Belum</p>
         </div>
         <div class="bg-white rounded-lg py-1 text-center border border-blue-100">
-          <p class="text-sm font-bold text-blue-500 leading-none">${totalSiswa}</p>
-          <p class="text-xs text-blue-400 leading-none mt-0.5">Total</p>
+          <p class="text-xs font-bold text-blue-500 leading-none">${totalSiswa}</p>
+          <p class="text-[9px] text-blue-400 leading-none mt-0.5">Total</p>
         </div>
       </div>
     </div>`;
   }).join('');
 
-  container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:10px">${cards}</div>`;
+  container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px">${cards}</div>`;
 }
 
 
@@ -1191,7 +1184,7 @@ function renderRecentScans() {
     const ta = a.created_at || a.check_in_time || '';
     const tb = b.created_at || b.check_in_time || '';
     return tb.localeCompare(ta);
-  }).slice(0, 15);
+  }).slice(0, 3);
 
   container.innerHTML = sorted.map((a, idx) => {
     const initial = (a.student_name || '?').charAt(0).toUpperCase();
