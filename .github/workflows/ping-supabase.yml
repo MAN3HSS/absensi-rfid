@@ -1,0 +1,49 @@
+# ============================================================
+# PING SUPABASE — Otomatis setiap 4 hari
+# Mencegah database pause pada akun Supabase free tier
+# ============================================================
+
+name: Ping Supabase
+
+on:
+  schedule:
+    # Jalankan setiap 4 hari sekali pada pukul 06:00 WIB (23:00 UTC)
+    # Format: menit jam tanggal bulan hari-dalam-seminggu
+    - cron: '0 23 */4 * *'
+
+  # Tombol manual — bisa dijalankan kapan saja dari GitHub
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 🏓 Ping Supabase Database
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          echo "⏰ Ping dimulai: $(date '+%Y-%m-%d %H:%M:%S UTC')"
+
+          # Kirim query ringan ke Supabase REST API
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 30 \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            "$SUPABASE_URL/rest/v1/settings?select=id&limit=1")
+
+          echo "📡 Response code: $RESPONSE"
+
+          if [ "$RESPONSE" = "200" ] || [ "$RESPONSE" = "206" ]; then
+            echo "✅ Supabase aktif dan merespons dengan baik!"
+          else
+            echo "❌ Ping gagal! Response: $RESPONSE"
+            exit 1
+          fi
+
+      - name: 📋 Catat Waktu Ping
+        run: |
+          echo "🕐 Ping selesai: $(date '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "📅 Ping berikutnya: 4 hari lagi"
