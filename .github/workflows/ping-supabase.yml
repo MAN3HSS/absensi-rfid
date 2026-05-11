@@ -1,25 +1,35 @@
 # ============================================================
-# PING SUPABASE — Otomatis setiap 4 hari
-# Mencegah database pause pada akun Supabase free tier
+# PING SUPABASE — Setiap 4 hari
+# + Auto-commit agar GitHub Actions tidak pernah berhenti
 # ============================================================
 
 name: Ping Supabase
 
 on:
   schedule:
-    # Jalankan setiap 4 hari sekali pada pukul 06:00 WIB (23:00 UTC)
-    # Format: menit jam tanggal bulan hari-dalam-seminggu
+    # Setiap 4 hari, jam 06:00 WIB (23:00 UTC)
     - cron: '0 23 */4 * *'
 
-  # Tombol manual — bisa dijalankan kapan saja dari GitHub
+  # Tombol manual
   workflow_dispatch:
+
+# Izin untuk commit & push balik ke repo
+permissions:
+  contents: write
 
 jobs:
   ping:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
+      # ── 1. Checkout repositori ──
+      - name: 📥 Checkout Repositori
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── 2. Ping Supabase ──
       - name: 🏓 Ping Supabase Database
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -27,7 +37,6 @@ jobs:
         run: |
           echo "⏰ Ping dimulai: $(date '+%Y-%m-%d %H:%M:%S UTC')"
 
-          # Kirim query ringan ke Supabase REST API
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
             --max-time 30 \
             -H "apikey: $SUPABASE_KEY" \
@@ -37,13 +46,44 @@ jobs:
           echo "📡 Response code: $RESPONSE"
 
           if [ "$RESPONSE" = "200" ] || [ "$RESPONSE" = "206" ]; then
-            echo "✅ Supabase aktif dan merespons dengan baik!"
+            echo "✅ Supabase aktif!"
+            echo "STATUS=✅ Berhasil (HTTP $RESPONSE)" >> $GITHUB_ENV
           else
             echo "❌ Ping gagal! Response: $RESPONSE"
+            echo "STATUS=❌ Gagal (HTTP $RESPONSE)" >> $GITHUB_ENV
             exit 1
           fi
 
-      - name: 📋 Catat Waktu Ping
+      # ── 3. Tulis timestamp ke file ──
+      # Ini yang membuat repositori selalu "aktif"
+      # sehingga GitHub Actions tidak pernah dinonaktifkan
+      - name: 📝 Update Timestamp (Jaga Repo Tetap Aktif)
         run: |
-          echo "🕐 Ping selesai: $(date '+%Y-%m-%d %H:%M:%S UTC')"
-          echo "📅 Ping berikutnya: 4 hari lagi"
+          mkdir -p .github
+          echo "Last ping: $(date '+%Y-%m-%d %H:%M:%S UTC') | $STATUS" > .github/last-ping.txt
+          echo "Ping berikutnya: 4 hari lagi" >> .github/last-ping.txt
+          cat .github/last-ping.txt
+
+      # ── 4. Commit & push timestamp ──
+      - name: 🔄 Commit & Push (Aktivitas Repo)
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/last-ping.txt
+
+          # Hanya commit jika ada perubahan
+          if git diff --staged --quiet; then
+            echo "Tidak ada perubahan, skip commit."
+          else
+            git commit -m "🏓 Auto-ping Supabase $(date '+%Y-%m-%d')"
+            git push
+            echo "✅ Commit berhasil — repo tetap aktif!"
+          fi
+
+      - name: 🏁 Selesai
+        run: |
+          echo "================================"
+          echo " Ping Supabase : $STATUS"
+          echo " Repo aktif    : ✅ Ya"
+          echo " Waktu         : $(date '+%Y-%m-%d %H:%M UTC')"
+          echo "================================"
