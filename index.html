@@ -586,7 +586,7 @@
 </div>
 
 <!-- Camera Scan Modal -->
-<div id="camera-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:rgba(15,23,42,0.85);backdrop-filter:blur(8px)">
+<div id="camera-modal" class="fixed inset-0 z-40 hidden items-center justify-center p-4" style="background:rgba(15,23,42,0.85);backdrop-filter:blur(8px)">
   <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden modal-pop">
     <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
       <h3 class="font-bold text-slate-800">Scan Barcode / QR</h3>
@@ -596,7 +596,11 @@
     </div>
     <div class="p-4">
       <div id="qr-reader" class="w-full rounded-xl overflow-hidden bg-slate-900" style="min-height:280px"></div>
-      <p class="text-xs text-slate-400 text-center mt-3">Arahkan kamera ke barcode/QR pada kartu pelajar</p>
+      <p class="text-xs text-slate-400 text-center mt-3">Kamera tetap aktif — arahkan kartu siswa satu per satu, tidak perlu klik ulang untuk setiap siswa</p>
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
+        <p class="text-sm text-slate-500">Sudah discan: <span id="camera-scan-count" class="font-bold text-slate-800">0</span></p>
+        <button onclick="closeCameraModal()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700">Selesai</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1688,14 +1692,31 @@ async function saveScanMode(value) {
 }
 
 // ---- Kamera Barcode/QR ----
+let cameraScanCount = 0;
+let lastCameraCode = '';
+let lastCameraScanAt = 0;
 function openCameraModal() {
   document.getElementById('camera-modal').classList.replace('hidden','flex');
   cameraModalOpen = true;
+  cameraScanCount = 0;
+  lastCameraCode = '';
+  lastCameraScanAt = 0;
+  document.getElementById('camera-scan-count').textContent = '0';
   html5QrInstance = new Html5Qrcode('qr-reader');
   html5QrInstance.start(
     { facingMode: 'environment' },
     { fps: 10, qrbox: { width: 240, height: 240 } },
-    (decodedText) => { closeCameraModal(); processScan(decodedText.trim()); },
+    (decodedText) => {
+      const code = decodedText.trim();
+      const now = Date.now();
+      // Cegah kartu yang sama terbaca berulang kali selagi masih di depan kamera
+      if (code===lastCameraCode && (now-lastCameraScanAt)<3000) return;
+      lastCameraCode = code;
+      lastCameraScanAt = now;
+      cameraScanCount++;
+      document.getElementById('camera-scan-count').textContent = String(cameraScanCount);
+      processScan(code); // kamera TETAP terbuka, siap untuk siswa berikutnya
+    },
     () => {}
   ).catch(() => { showToast('Tidak dapat mengakses kamera','error'); closeCameraModal(); });
 }
