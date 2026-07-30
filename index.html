@@ -2129,7 +2129,14 @@ function closeDeleteModal(){ document.getElementById('delete-modal').classList.r
 function setupEventListeners() {
   const rfid=document.getElementById('rfid-input');
   rfid.addEventListener('input',e=>{ const v=e.target.value.replace(/\D/g,''); e.target.value=v; if(v.length===10) processScan(v); });
-  rfid.addEventListener('blur',()=>{ if(currentPage==='scan') setTimeout(focusRfidInput,100); });
+  rfid.addEventListener('blur',(e)=>{
+    if(currentPage!=='scan') return;
+    const rt = e.relatedTarget;
+    // Jangan rebut fokus jika pengguna sedang berinteraksi dengan elemen lain
+    // (dropdown jenis kegiatan, tombol kamera, atau modal apa pun)
+    if (rt && (rt.tagName==='SELECT' || rt.tagName==='BUTTON' || rt.tagName==='INPUT' || rt.closest('.fixed'))) return;
+    setTimeout(()=>{ if(currentPage==='scan' && document.activeElement===document.body) focusRfidInput(); },100);
+  });
 
   // Enter key for admin auth modal
   document.getElementById('admin-password-input').addEventListener('keydown',e=>{ if(e.key==='Enter') verifyAdminPassword(); });
