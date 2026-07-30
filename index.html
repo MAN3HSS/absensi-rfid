@@ -126,12 +126,17 @@
                   placeholder="••••••••••" maxlength="20" autocomplete="off" autofocus>
               </div>
             </div>
-            <div class="mb-6">
-              <button type="button" id="camera-scan-btn" onclick="openCameraModal()"
+            <div class="mb-4">
+              <button type="button" id="camera-scan-btn" onclick="toggleInlineCamera()"
                 class="hidden w-full items-center justify-center gap-2 px-4 py-3 bg-slate-800 text-white rounded-xl text-sm font-semibold hover:bg-slate-700 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                Pakai Kamera (Scan Barcode/QR)
+                <span id="camera-scan-btn-label">Pakai Kamera (Scan Barcode/QR)</span>
               </button>
+              <div id="camera-inline" class="hidden mt-3">
+                <div id="qr-reader" class="w-full rounded-xl overflow-hidden bg-slate-900" style="min-height:260px"></div>
+                <p class="text-xs text-slate-400 text-center mt-2">Kamera tetap aktif — arahkan kartu siswa satu per satu, tidak perlu klik ulang untuk setiap siswa</p>
+                <p class="text-sm text-slate-500 text-center mt-1">Sudah discan: <span id="camera-scan-count" class="font-bold text-slate-800">0</span></p>
+              </div>
             </div>
             <div class="flex items-center justify-center gap-6 mb-6">
               <div class="text-center">
@@ -582,26 +587,6 @@
     <p id="scan-modal-phone" class="text-sm opacity-75 mb-4">--</p>
     <div id="scan-modal-status" class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium">--</div>
     <p id="scan-modal-time" class="text-sm opacity-75 mt-4">--</p>
-  </div>
-</div>
-
-<!-- Camera Scan Modal -->
-<div id="camera-modal" class="fixed inset-0 z-40 hidden items-center justify-center p-4" style="background:rgba(15,23,42,0.85);backdrop-filter:blur(8px)">
-  <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden modal-pop">
-    <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-      <h3 class="font-bold text-slate-800">Scan Barcode / QR</h3>
-      <button onclick="closeCameraModal()" class="p-1.5 rounded-lg hover:bg-slate-100">
-        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <div class="p-4">
-      <div id="qr-reader" class="w-full rounded-xl overflow-hidden bg-slate-900" style="min-height:280px"></div>
-      <p class="text-xs text-slate-400 text-center mt-3">Kamera tetap aktif — arahkan kartu siswa satu per satu, tidak perlu klik ulang untuk setiap siswa</p>
-      <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
-        <p class="text-sm text-slate-500">Sudah discan: <span id="camera-scan-count" class="font-bold text-slate-800">0</span></p>
-        <button onclick="closeCameraModal()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700">Selesai</button>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -1261,6 +1246,7 @@ function showToast(msg, type='success') {
 
 // ========== NAVIGATION ==========
 function showPage(page) {
+  if (currentPage==='scan' && page!=='scan' && cameraModalOpen) closeInlineCamera();
   currentPage=page;
   document.querySelectorAll('.page-content').forEach(p=>p.classList.add('hidden'));
   document.getElementById(`page-${page}`).classList.remove('hidden');
@@ -1683,6 +1669,7 @@ function renderScanModeUI() {
   if (camBtn) camBtn.classList.toggle('hidden', mode==='rfid');
   camBtn?.classList.toggle('flex', mode!=='rfid');
   if (rfidInput) rfidInput.parentElement.parentElement.classList.toggle('hidden', mode==='camera');
+  if (mode==='rfid' && cameraModalOpen) closeInlineCamera();
 }
 async function saveScanMode(value) {
   settings.scan_mode = value;
@@ -1695,8 +1682,14 @@ async function saveScanMode(value) {
 let cameraScanCount = 0;
 let lastCameraCode = '';
 let lastCameraScanAt = 0;
-function openCameraModal() {
-  document.getElementById('camera-modal').classList.replace('hidden','flex');
+
+function toggleInlineCamera() {
+  if (cameraModalOpen) closeInlineCamera(); else openInlineCamera();
+}
+
+function openInlineCamera() {
+  document.getElementById('camera-inline').classList.remove('hidden');
+  document.getElementById('camera-scan-btn-label').textContent = 'Tutup Kamera';
   cameraModalOpen = true;
   cameraScanCount = 0;
   lastCameraCode = '';
@@ -1718,10 +1711,12 @@ function openCameraModal() {
       processScan(code); // kamera TETAP terbuka, siap untuk siswa berikutnya
     },
     () => {}
-  ).catch(() => { showToast('Tidak dapat mengakses kamera','error'); closeCameraModal(); });
+  ).catch(() => { showToast('Tidak dapat mengakses kamera','error'); closeInlineCamera(); });
 }
-function closeCameraModal() {
-  document.getElementById('camera-modal').classList.replace('flex','hidden');
+
+function closeInlineCamera() {
+  document.getElementById('camera-inline').classList.add('hidden');
+  document.getElementById('camera-scan-btn-label').textContent = 'Pakai Kamera (Scan Barcode/QR)';
   cameraModalOpen = false;
   if (html5QrInstance) {
     html5QrInstance.stop().then(()=>html5QrInstance.clear()).catch(()=>{});
