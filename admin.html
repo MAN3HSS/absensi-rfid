@@ -45,12 +45,6 @@
         </div>
       </div>
       <div class="flex items-center gap-1">
-        <button onclick="showPage('scan')"      class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition-all" data-page="scan">
-          <span class="flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-            Scan
-          </span>
-        </button>
         <button onclick="showPage('dashboard')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition-all" data-page="dashboard">
           <span class="flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
@@ -89,286 +83,178 @@
   </div>
 </nav>
 
-<!-- ===== SCAN PAGE ===== -->
-<div id="page-scan" class="page-content min-h-full pt-16">
-  <div class="min-h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-6 px-4" style="min-height:calc(100vh - 64px)">
-    <div class="max-w-[1920px] mx-auto px-2 lg:px-6">
-
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
-
-        <!-- ══════════════════════════════
-             KIRI: Scan + Stats + Riwayat
-        ══════════════════════════════ -->
-        <div class="flex flex-col gap-5 fade-in-up">
-
-          <!-- Scan Card Utama -->
-          <div class="glass-card rounded-3xl p-8 shadow-2xl">
-            <div class="text-center mb-8">
-              <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-500 mb-4 relative">
-                <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-500 pulse-ring"></div>
-                <svg class="w-10 h-10 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-                </svg>
-              </div>
-              <h2 class="text-2xl font-bold text-slate-800 mb-1">Scan Kartu / Kode</h2>
-              <p class="text-slate-500 text-sm">Tempelkan kartu pada reader atau gunakan kamera untuk absensi</p>
-              <p id="day-info" class="text-xs mt-1 font-medium text-slate-400"></p>
-            </div>
-
-            <!-- Banner Mode Pulang Cepat Massal -->
-            <div id="mass-early-leave-banner" class="hidden mb-4 p-3.5 rounded-xl bg-amber-100 border-2 border-amber-300 flex items-center gap-3">
-              <svg class="w-6 h-6 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-              <div>
-                <p class="text-sm font-bold text-amber-800">Mode Pulang Cepat Massal Aktif</p>
-                <p class="text-xs text-amber-700">Semua siswa bisa scan "Pulang" kapan saja hari ini (rapat/acara sekolah). Matikan di Pengaturan.</p>
-              </div>
-            </div>
-
-            <!-- Pilih Jenis Kegiatan -->
-            <div class="mb-3">
-              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Jenis Kegiatan</label>
-              <select id="activity-select" onchange="onActivityChange()"
-                class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                <option value="sekolah">Absen Sekolah (Masuk/Pulang)</option>
-              </select>
-            </div>
-
-            <!-- Izin Pulang Cepat -->
-            <label id="early-leave-wrap" class="flex items-center gap-3 mb-5 p-3 rounded-xl border-2 border-amber-200 bg-amber-50 cursor-pointer select-none">
-              <input type="checkbox" id="early-leave-toggle" class="w-5 h-5 rounded border-amber-300 text-amber-600 focus:ring-amber-500 flex-shrink-0">
-              <div>
-                <p class="text-sm font-semibold text-amber-800">Izin Pulang Cepat (Mendadak)</p>
-                <p class="text-xs text-amber-600">Centang untuk 1x scan berikutnya kalau ada siswa pulang sebelum jam pulang karena keperluan mendadak. Otomatis nonaktif lagi setelah dipakai.</p>
-              </div>
-            </label>
-
-            <div class="relative mb-4">
-              <div class="bg-slate-100 rounded-2xl p-6 border-2 border-dashed border-slate-300 relative overflow-hidden">
-                <div class="scan-line absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent"></div>
-                <input type="text" id="rfid-input"
-                  class="w-full text-center text-3xl font-mono font-bold tracking-widest bg-transparent border-none outline-none text-slate-800 placeholder-slate-400 input-glow rounded-xl py-4"
-                  placeholder="••••••••••" maxlength="20" autocomplete="off" autofocus>
-              </div>
-            </div>
-            <div class="mb-4">
-              <button type="button" id="camera-scan-btn" onclick="toggleInlineCamera()"
-                class="hidden w-full items-center justify-center gap-2 px-4 py-3 bg-slate-800 text-white rounded-xl text-sm font-semibold hover:bg-slate-700 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <span id="camera-scan-btn-label">Pakai Kamera (Scan Barcode/QR)</span>
-              </button>
-              <div id="camera-inline" class="hidden mt-3">
-                <div class="relative">
-                  <div id="qr-reader" class="w-full rounded-xl overflow-hidden bg-slate-900" style="min-height:260px"></div>
-                  <button type="button" onclick="switchCameraFacing()" title="Ganti Kamera Depan/Belakang"
-                    class="absolute top-2 right-2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center text-white transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                  </button>
-                </div>
-                <p class="text-xs text-slate-400 text-center mt-2">Kamera tetap aktif — arahkan kartu siswa satu per satu, tidak perlu klik ulang untuk setiap siswa</p>
-                <p class="text-xs text-slate-400 text-center">Kamera: <span id="camera-facing-label" class="font-medium text-slate-500">Belakang</span> · <button type="button" onclick="switchCameraFacing()" class="text-emerald-600 font-semibold hover:underline">Ganti Kamera</button></p>
-                <p class="text-sm text-slate-500 text-center mt-1">Sudah discan: <span id="camera-scan-count" class="font-bold text-slate-800">0</span></p>
-              </div>
-            </div>
-            <div class="flex items-center justify-center gap-6 mb-6">
-              <div class="text-center">
-                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Waktu</p>
-                <p id="current-time" class="text-2xl font-bold text-slate-800 font-mono">--:--:--</p>
-              </div>
-              <div class="w-px h-12 bg-slate-200"></div>
-              <div class="text-center">
-                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Tanggal</p>
-                <p id="current-date" class="text-lg font-semibold text-slate-600">--</p>
-              </div>
-            </div>
-            <div class="grid grid-cols-3 gap-3">
-              <div class="bg-emerald-50 rounded-xl p-3 text-center border border-emerald-100">
-                <div class="w-3 h-3 rounded-full bg-emerald-500 mx-auto mb-2"></div>
-                <p class="text-xs font-medium text-emerald-700">Tepat Waktu</p>
-              </div>
-              <div class="bg-amber-50 rounded-xl p-3 text-center border border-amber-100">
-                <div class="w-3 h-3 rounded-full bg-amber-500 mx-auto mb-2"></div>
-                <p class="text-xs font-medium text-amber-700">Terlambat</p>
-              </div>
-              <div class="bg-red-50 rounded-xl p-3 text-center border border-red-100">
-                <div class="w-3 h-3 rounded-full bg-red-500 mx-auto mb-2"></div>
-                <p class="text-xs font-medium text-red-700">Gagal</p>
-              </div>
-            </div>
-          </div>
-
-        </div><!-- end kolom kiri -->
-
-        <!-- ══════════════════════════════
-             TENGAH: Ringkasan Hari Ini + Riwayat Scan Terbaru
-        ══════════════════════════════ -->
-        <div class="flex flex-col gap-5" style="animation-delay:0.1s">
-          <!-- Statistik Hari Ini -->
-          <div class="glass-card rounded-2xl p-5">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                  <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <div><p class="text-xs text-slate-400">Hadir Hari Ini</p><p id="today-present" class="text-2xl font-bold text-slate-800">0</p></div>
-              </div>
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
-                  <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <div><p class="text-xs text-slate-400">Terlambat</p><p id="today-late" class="text-2xl font-bold text-slate-800">0</p></div>
-              </div>
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
-                  <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </div>
-                <div><p class="text-xs text-slate-400">Tidak Hadir</p><p id="today-absent" class="text-2xl font-bold text-slate-800">0</p></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Riwayat Scan Terbaru -->
-          <div class="glass-card rounded-2xl shadow-xl overflow-hidden">
-            <div class="px-5 py-3.5 border-b border-slate-200 flex items-center gap-3 bg-white/60">
-              <div class="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
-                <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-              </div>
-              <div class="flex-1">
-                <h3 class="font-bold text-slate-800 text-sm">Riwayat Scan Terbaru</h3>
-                <p class="text-xs text-slate-400">15 scan terakhir hari ini</p>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <span class="relative flex h-2 w-2">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                <span class="text-xs text-emerald-600 font-bold">Live</span>
-              </div>
-            </div>
-            <div id="recent-scan-list" class="divide-y divide-slate-100 overflow-y-auto" style="max-height:620px">
-              <div class="flex flex-col items-center justify-center py-10 text-slate-400">
-                <svg class="w-10 h-10 mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                <p class="text-sm">Belum ada scan hari ini</p>
-              </div>
-            </div>
-          </div>
-
-        </div><!-- end kolom tengah -->
-
-
-        <!-- ══════════════════════════════
-             KANAN: Status Per Kelas saja
-        ══════════════════════════════ -->
-        <div class="fade-in-up" style="animation-delay:0.15s">
-          <div class="glass-card rounded-2xl shadow-xl overflow-hidden">
-            <div class="px-5 py-3.5 border-b border-slate-200 flex items-center gap-3 bg-white/60">
-              <div class="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                </svg>
-              </div>
-              <div class="flex-1">
-                <h3 class="font-bold text-slate-800 text-sm">Status Absensi Per Kelas</h3>
-                <p class="text-xs text-slate-400">Semua kelas tampil tanpa scroll</p>
-              </div>
-              <span id="class-count-badge" class="text-xs font-bold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">0 Kelas</span>
-            </div>
-            <div id="class-status-list" class="p-3">
-              <div class="flex flex-col items-center justify-center py-10 text-slate-400">
-                <svg class="w-10 h-10 mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                <p class="text-sm">Belum ada data kelas</p>
-              </div>
-            </div>
-          </div>
-        </div><!-- end kolom kanan -->
-
-      </div><!-- end grid -->
-    </div>
-  </div>
-</div>
-
 <!-- ===== DASHBOARD PAGE ===== -->
 <div id="page-dashboard" class="page-content hidden min-h-full pt-20 pb-8 bg-slate-100">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6">
-    <div class="mb-6">
-      <h2 class="text-2xl font-bold text-slate-800">Dashboard</h2>
-      <p class="text-slate-500">Ringkasan absensi hari ini</p>
-    </div>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-        <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-3">
-          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-        </div>
-        <p id="stat-total" class="text-3xl font-bold text-slate-800">0</p>
-        <p class="text-sm text-slate-500">Total Siswa</p>
+  <div class="max-w-[1920px] mx-auto px-2 lg:px-6">
+    <div class="mb-6 flex items-start justify-between flex-wrap gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800">Dashboard</h2>
+        <p class="text-slate-500">Ringkasan absensi hari ini</p>
+        <p id="day-info" class="text-xs mt-1 font-medium text-slate-400"></p>
       </div>
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-        <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center mb-3">
-          <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <div class="flex items-center gap-5 bg-white rounded-2xl px-5 py-3 shadow-sm border border-slate-200">
+        <div class="text-right">
+          <p class="text-[10px] text-slate-400 uppercase tracking-wider">Waktu</p>
+          <p id="current-time" class="text-xl font-bold text-slate-800 font-mono leading-none">--:--:--</p>
         </div>
-        <p id="stat-present" class="text-3xl font-bold text-slate-800">0</p>
-        <p class="text-sm text-slate-500">Hadir</p>
-      </div>
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-        <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center mb-3">
-          <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="w-px h-8 bg-slate-200"></div>
+        <div class="text-right">
+          <p class="text-[10px] text-slate-400 uppercase tracking-wider">Tanggal</p>
+          <p id="current-date" class="text-sm font-semibold text-slate-600 leading-tight">--</p>
         </div>
-        <p id="stat-late" class="text-3xl font-bold text-slate-800">0</p>
-        <p class="text-sm text-slate-500">Terlambat</p>
-      </div>
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-        <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center mb-3">
-          <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </div>
-        <p id="stat-absent" class="text-3xl font-bold text-slate-800">0</p>
-        <p class="text-sm text-slate-500">Tidak Hadir</p>
       </div>
     </div>
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      <div class="p-5 border-b border-slate-200 flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h3 class="text-lg font-semibold text-slate-800">Riwayat Absensi Hari Ini</h3>
-          <p class="text-sm text-slate-500" id="table-date">--</p>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
+
+      <!-- ══════════════════════════════
+           UTAMA (2/3): Stat + Tabel Absensi
+      ══════════════════════════════ -->
+      <div class="xl:col-span-2 flex flex-col gap-5">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+            <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-3">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <p id="stat-total" class="text-3xl font-bold text-slate-800">0</p>
+            <p class="text-sm text-slate-500">Total Siswa</p>
+          </div>
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center mb-3">
+              <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <p id="stat-present" class="text-3xl font-bold text-slate-800">0</p>
+            <p class="text-sm text-slate-500">Hadir</p>
+          </div>
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center mb-3">
+              <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <p id="stat-late" class="text-3xl font-bold text-slate-800">0</p>
+            <p class="text-sm text-slate-500">Terlambat</p>
+          </div>
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+            <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center mb-3">
+              <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </div>
+            <p id="stat-absent" class="text-3xl font-bold text-slate-800">0</p>
+            <p class="text-sm text-slate-500">Tidak Hadir</p>
+          </div>
         </div>
-        <div class="flex items-center gap-2 flex-wrap">
-          <select id="filter-activity" onchange="renderDashboard()" class="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-            <option value="sekolah">Absen Sekolah</option>
-          </select>
-          <select id="filter-class" class="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-            <option value="">Semua Kelas</option>
-          </select>
-          <button onclick="printReport()" class="px-3 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-            Cetak
-          </button>
+
+        <!-- Banner Mode Pulang Cepat Massal -->
+        <div id="mass-early-leave-banner" class="hidden p-3.5 rounded-xl bg-amber-100 border-2 border-amber-300 flex items-center gap-3">
+          <svg class="w-6 h-6 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <div>
+            <p class="text-sm font-bold text-amber-800">Mode Pulang Cepat Massal Aktif</p>
+            <p class="text-xs text-amber-700">Semua siswa bisa scan "Pulang" kapan saja hari ini (rapat/acara sekolah). Matikan di Pengaturan.</p>
+          </div>
         </div>
-      </div>
-      <!-- Admin info bar -->
-      <div id="admin-info-bar" class="hidden px-5 py-2 bg-emerald-50 border-b border-emerald-100 flex items-center gap-2">
-        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
-        <p class="text-xs text-emerald-700 font-medium">Mode Admin Aktif — Anda dapat mengedit dan menghapus riwayat absensi</p>
-        <button onclick="logoutAdmin()" class="ml-auto text-xs text-emerald-600 underline hover:text-emerald-800">Logout Admin</button>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead class="bg-slate-50">
-            <tr>
-              <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">No</th>
-              <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Nama Siswa</th>
-              <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Kelas</th>
-              <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Jam Masuk</th>
-              <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Jam Pulang</th>
-              <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-              <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="attendance-table" class="divide-y divide-slate-100">
-            <tr><td colspan="7" class="px-5 py-12 text-center text-slate-400">Belum ada data absensi hari ini</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="p-5 border-b border-slate-200 flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <h3 class="text-lg font-semibold text-slate-800">Riwayat Absensi Hari Ini</h3>
+              <p class="text-sm text-slate-500" id="table-date">--</p>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <select id="filter-activity" onchange="renderDashboard()" class="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="sekolah">Absen Sekolah</option>
+              </select>
+              <select id="filter-class" class="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="">Semua Kelas</option>
+              </select>
+              <button onclick="printReport()" class="px-3 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                Cetak
+              </button>
+            </div>
+          </div>
+          <!-- Admin info bar -->
+          <div id="admin-info-bar" class="hidden px-5 py-2 bg-emerald-50 border-b border-emerald-100 flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
+            <p class="text-xs text-emerald-700 font-medium">Mode Admin Aktif — Anda dapat mengedit dan menghapus riwayat absensi</p>
+            <button onclick="logoutAdmin()" class="ml-auto text-xs text-emerald-600 underline hover:text-emerald-800">Logout Admin</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">No</th>
+                  <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Nama Siswa</th>
+                  <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Kelas</th>
+                  <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Jam Masuk</th>
+                  <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Jam Pulang</th>
+                  <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                  <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="attendance-table" class="divide-y divide-slate-100">
+                <tr><td colspan="7" class="px-5 py-12 text-center text-slate-400">Belum ada data absensi hari ini</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- end kolom utama -->
+
+      <!-- ══════════════════════════════
+           SIDEBAR (1/3): Riwayat Scan + Status Per Kelas
+      ══════════════════════════════ -->
+      <div class="flex flex-col gap-5">
+
+        <!-- Riwayat Scan Terbaru -->
+        <div class="glass-card rounded-2xl shadow-xl overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-slate-200 flex items-center gap-3 bg-white/60">
+            <div class="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h3 class="font-bold text-slate-800 text-sm">Riwayat Scan Terbaru</h3>
+              <p class="text-xs text-slate-400">15 scan terakhir hari ini</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span class="text-xs text-emerald-600 font-bold">Live</span>
+            </div>
+          </div>
+          <div id="recent-scan-list" class="divide-y divide-slate-100 overflow-y-auto" style="max-height:420px">
+            <div class="flex flex-col items-center justify-center py-10 text-slate-400">
+              <svg class="w-10 h-10 mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              <p class="text-sm">Belum ada scan hari ini</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status Absensi Per Kelas -->
+        <div class="glass-card rounded-2xl shadow-xl overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-slate-200 flex items-center gap-3 bg-white/60">
+            <div class="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h3 class="font-bold text-slate-800 text-sm">Status Absensi Per Kelas</h3>
+              <p class="text-xs text-slate-400">Semua kelas tampil tanpa scroll</p>
+            </div>
+            <span id="class-count-badge" class="text-xs font-bold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">0 Kelas</span>
+          </div>
+          <div id="class-status-list" class="p-3">
+            <div class="flex flex-col items-center justify-center py-10 text-slate-400">
+              <svg class="w-10 h-10 mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              <p class="text-sm">Belum ada data kelas</p>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end sidebar -->
+
+    </div><!-- end grid -->
   </div>
 </div>
 
@@ -958,7 +844,7 @@ let dbClient = null;
 let students = [], classes = [], attendance = [], settingsAll = [];
 let activities = [], activityMembers = [];
 let settings = { check_in:'07:00', late_limit:'07:30', check_out:'14:00', friday_check_out:'11:30', close_time:'17:00', admin_password:'admin123', school_name:'MAN 3 Hulu Sungai Selatan', school_logo:'', scan_mode:'rfid', mass_early_leave:'false' };
-let currentPage = 'scan';
+let currentPage = 'dashboard';
 let currentActivityCode = 'sekolah';
 let deleteCallback = null;
 let pendingAdminCallback = null;
@@ -991,7 +877,7 @@ async function initApp() {
 
   const ok = await connectSupabase(url, key, false);
   if (!ok) showConfigModal();
-  else { showPage('scan'); focusRfidInput(); }
+  else { showPage('dashboard'); }
 }
 
 // ========== SUPABASE ==========
@@ -1032,7 +918,7 @@ async function saveSupabaseConfigFromModal() {
   btn.disabled = true; btn.innerHTML = '⏳ Menghubungkan...';
   const ok = await connectSupabase(url, key, true);
   btn.disabled = false; btn.innerHTML = '⚡ Hubungkan Database';
-  if (ok) { closeConfigModal(); showPage('scan'); focusRfidInput(); }
+  if (ok) { closeConfigModal(); showPage('dashboard'); }
 }
 
 async function saveSupabaseConfigFromSettings() {
@@ -1307,12 +1193,10 @@ function showToast(msg, type='success') {
 
 // ========== NAVIGATION ==========
 function showPage(page) {
-  if (currentPage==='scan' && page!=='scan' && cameraModalOpen) closeInlineCamera();
   currentPage=page;
   document.querySelectorAll('.page-content').forEach(p=>p.classList.add('hidden'));
   document.getElementById(`page-${page}`).classList.remove('hidden');
   updateNavigation(); renderCurrentPage();
-  if(page==='scan') setTimeout(focusRfidInput,100);
 }
 function updateNavigation() {
   document.querySelectorAll('.nav-btn').forEach(btn=>{
@@ -1323,7 +1207,6 @@ function updateNavigation() {
 }
 function renderCurrentPage() {
   switch(currentPage) {
-    case 'scan':      renderScanStats(); break;
     case 'dashboard': renderDashboard(); break;
     case 'students':  renderStudents(); break;
     case 'settings':  renderSettings(); break;
@@ -1874,6 +1757,9 @@ function renderDashboard() {
   updateAdminUI();
   const fc=document.getElementById('filter-class').value;
   renderAttendanceTable(fc?t.filter(a=>a.class_name===fc):t);
+  renderRecentScans();
+  renderClassStatus();
+  renderMassEarlyLeaveUI();
 }
 
 function renderAttendanceTable(data) {
@@ -2267,17 +2153,6 @@ function closeDeleteModal(){ document.getElementById('delete-modal').classList.r
 
 // ========== EVENT LISTENERS ==========
 function setupEventListeners() {
-  const rfid=document.getElementById('rfid-input');
-  rfid.addEventListener('input',e=>{ const v=e.target.value.replace(/\D/g,''); e.target.value=v; if(v.length===10) processScan(v); });
-  rfid.addEventListener('blur',(e)=>{
-    if(currentPage!=='scan') return;
-    const rt = e.relatedTarget;
-    // Jangan rebut fokus jika pengguna sedang berinteraksi dengan elemen lain
-    // (dropdown jenis kegiatan, tombol kamera, atau modal apa pun)
-    if (rt && (rt.tagName==='SELECT' || rt.tagName==='BUTTON' || rt.tagName==='INPUT' || rt.closest('.fixed'))) return;
-    setTimeout(()=>{ if(currentPage==='scan' && document.activeElement===document.body) focusRfidInput(); },100);
-  });
-
   // Enter key for admin auth modal
   document.getElementById('admin-password-input').addEventListener('keydown',e=>{ if(e.key==='Enter') verifyAdminPassword(); });
 
