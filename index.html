@@ -1468,15 +1468,25 @@ function renderActivitySelect() {
   if (list.length===0) {
     sel.innerHTML = '<option value="sekolah">Absen Sekolah (Masuk/Pulang)</option>';
     currentActivityCode = 'sekolah';
+    updateEarlyLeaveVisibility();
     return;
   }
   const prev = sel.value || currentActivityCode;
   sel.innerHTML = list.map(a=>`<option value="${a.code}">${a.name}</option>`).join('');
   if (list.some(a=>a.code===prev)) sel.value = prev; else sel.value = list[0].code;
   currentActivityCode = sel.value;
+  updateEarlyLeaveVisibility();
+}
+function updateEarlyLeaveVisibility() {
+  const wrap = document.getElementById('early-leave-wrap');
+  if (!wrap) return;
+  const isSchool = currentActivityCode==='sekolah';
+  wrap.classList.toggle('hidden', !isSchool);
+  if (!isSchool) { const cb=document.getElementById('early-leave-toggle'); if(cb) cb.checked=false; }
 }
 function onActivityChange() {
   currentActivityCode = document.getElementById('activity-select').value;
+  updateEarlyLeaveVisibility();
   focusRfidInput();
 }
 
