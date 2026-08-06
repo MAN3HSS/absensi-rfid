@@ -506,7 +506,10 @@
 <!-- Scan Result Modal -->
 <div id="scan-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px)">
   <div id="scan-modal-content" class="w-full max-w-md rounded-3xl p-8 text-center modal-pop">
-    <div id="scan-modal-icon" class="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center"></div>
+    <div id="scan-modal-icon-wrap" class="relative w-24 h-24 mx-auto mb-6">
+      <div id="scan-modal-icon" class="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden"></div>
+      <div id="scan-modal-badge" class="hidden absolute -bottom-1 -right-1 w-9 h-9 rounded-full items-center justify-center border-4 border-white"></div>
+    </div>
     <h3 id="scan-modal-title" class="text-2xl font-bold mb-2">--</h3>
     <p id="scan-modal-name" class="text-lg mb-1">--</p>
     <p id="scan-modal-class" class="text-sm opacity-75 mb-2">--</p>
@@ -1333,7 +1336,7 @@ async function processScan(code) {
   if (!dbClient) { showToast('Database belum terhubung','error'); focusRfidInput(); return; }
 
   const student = students.find(s=>s.rfid===code);
-  if (!student) { showScanModal('error','Kartu/Kode Tidak Terdaftar',code,'','','Tidak ditemukan di data siswa'); focusRfidInput(); return; }
+  if (!student) { showScanModal('error','Kartu/Kode Tidak Terdaftar',code,'','',null,'Tidak ditemukan di data siswa'); focusRfidInput(); return; }
 
   const activity = getActiveActivity();
   if (!activity) {
@@ -1345,7 +1348,7 @@ async function processScan(code) {
   if (activity.requires_membership) {
     const isMember = activityMembers.some(m=>m.activity_id===activity.id && m.student_id===student.student_id);
     if (!isMember) {
-      showScanModal('error','Bukan Anggota',student.student_name,student.class_name,student.parent_phone,`Tidak terdaftar di ${activity.name}`);
+      showScanModal('error','Bukan Anggota',student.student_name,student.class_name,student.parent_phone,student.photo_url,`Tidak terdaftar di ${activity.name}`);
       focusRfidInput(); return;
     }
   }
@@ -1358,26 +1361,26 @@ async function processScan(code) {
 
   if (activity.scan_mode==='single') {
     if (existing) {
-      showScanModal('warning',`Sudah Absen ${activity.name}`,student.student_name,student.class_name,student.parent_phone,`Tercatat: ${existing.check_in_time}`);
+      showScanModal('warning',`Sudah Absen ${activity.name}`,student.student_name,student.class_name,student.parent_phone,student.photo_url,`Tercatat: ${existing.check_in_time}`);
       focusRfidInput(); return;
     }
     const r = await dbCreate('attendance',{student_id:student.student_id,student_name:student.student_name,class_name:student.class_name,rfid:student.rfid,parent_phone:student.parent_phone,check_in_time:curTime,check_out_time:'',is_present:true,is_late:false,date:today,activity_type:activity.code});
-    if (r.isOk) { await loadAllData(); showScanModal('success',activity.name,student.student_name,student.class_name,student.parent_phone,`Tercatat: ${curTime}`); }
-    else showScanModal('error','Gagal',student.student_name,student.class_name,student.parent_phone,'Gagal menyimpan data');
+    if (r.isOk) { await loadAllData(); showScanModal('success',activity.name,student.student_name,student.class_name,student.parent_phone,student.photo_url,`Tercatat: ${curTime}`); }
+    else showScanModal('error','Gagal',student.student_name,student.class_name,student.parent_phone,student.photo_url,'Gagal menyimpan data');
     focusRfidInput(); return;
   }
 
   // scan_mode 'pair' (mis. izin keluar/kembali, atau eskul datang/pulang) — toggle sederhana tanpa aturan jam
   if (!existing) {
     const r = await dbCreate('attendance',{student_id:student.student_id,student_name:student.student_name,class_name:student.class_name,rfid:student.rfid,parent_phone:student.parent_phone,check_in_time:curTime,check_out_time:'',is_present:true,is_late:false,date:today,activity_type:activity.code});
-    if (r.isOk) { await loadAllData(); showScanModal('success',`${activity.name} - Keluar/Mulai`,student.student_name,student.class_name,student.parent_phone,`Jam: ${curTime}`); }
-    else showScanModal('error','Gagal',student.student_name,student.class_name,student.parent_phone,'Gagal menyimpan data');
+    if (r.isOk) { await loadAllData(); showScanModal('success',`${activity.name} - Keluar/Mulai`,student.student_name,student.class_name,student.parent_phone,student.photo_url,`Jam: ${curTime}`); }
+    else showScanModal('error','Gagal',student.student_name,student.class_name,student.parent_phone,student.photo_url,'Gagal menyimpan data');
   } else if (!existing.check_out_time) {
     const r = await dbUpdate('attendance',existing.__backendId,{check_out_time:curTime});
-    if (r.isOk) { await loadAllData(); showScanModal('checkout',`${activity.name} - Kembali/Selesai`,student.student_name,student.class_name,student.parent_phone,`Jam: ${curTime}`); }
-    else showScanModal('error','Gagal',student.student_name,student.class_name,student.parent_phone,'Gagal menyimpan data');
+    if (r.isOk) { await loadAllData(); showScanModal('checkout',`${activity.name} - Kembali/Selesai`,student.student_name,student.class_name,student.parent_phone,student.photo_url,`Jam: ${curTime}`); }
+    else showScanModal('error','Gagal',student.student_name,student.class_name,student.parent_phone,student.photo_url,'Gagal menyimpan data');
   } else {
-    showScanModal('warning',`${activity.name} Sudah Lengkap`,student.student_name,student.class_name,student.parent_phone,`${existing.check_in_time} - ${existing.check_out_time}`);
+    showScanModal('warning',`${activity.name} Sudah Lengkap`,student.student_name,student.class_name,student.parent_phone,student.photo_url,`${existing.check_in_time} - ${existing.check_out_time}`);
   }
   focusRfidInput();
 }
@@ -1395,13 +1398,13 @@ async function processSchoolScan(student) {
   const earlyLeave    = earlyLeaveEl ? earlyLeaveEl.checked : false;
   const massActive    = settings.mass_early_leave === 'true';
 
-  if (nowMin>closeTime) { showScanModal('error','Absensi Ditutup',student.student_name,student.class_name,student.parent_phone,'Waktu absensi telah berakhir'); focusRfidInput(); return; }
+  if (nowMin>closeTime) { showScanModal('error','Absensi Ditutup',student.student_name,student.class_name,student.parent_phone,student.photo_url,'Waktu absensi telah berakhir'); focusRfidInput(); return; }
 
   const existing = attendance.find(a=>a.student_id===student.student_id&&a.date===today&&(a.activity_type==='sekolah'||!a.activity_type));
 
   if (existing) {
     if (existing.check_out_time) {
-      showScanModal('warning','Sudah Absen Pulang',student.student_name,student.class_name,student.parent_phone,`Pulang: ${existing.check_out_time}`);
+      showScanModal('warning','Sudah Absen Pulang',student.student_name,student.class_name,student.parent_phone,student.photo_url,`Pulang: ${existing.check_out_time}`);
     } else if (nowMin>=checkOut || earlyLeave || massActive) {
       const isEarly = nowMin<checkOut && (earlyLeave || massActive);
       const keterangan = massActive ? 'Pulang cepat (mode massal - rapat/acara)' : 'Pulang cepat (izin mendadak)';
@@ -1410,28 +1413,28 @@ async function processSchoolScan(student) {
       if(r.isOk){
         if (isEarly) {
           if (earlyLeave && earlyLeaveEl) earlyLeaveEl.checked = false; // sekali pakai, otomatis nonaktif lagi
-          showScanModal('checkout', massActive ? 'Pulang Cepat (Mode Massal)' : 'Pulang Cepat (Izin)',student.student_name,student.class_name,student.parent_phone,`Pulang: ${curTime}`);
+          showScanModal('checkout', massActive ? 'Pulang Cepat (Mode Massal)' : 'Pulang Cepat (Izin)',student.student_name,student.class_name,student.parent_phone,student.photo_url,`Pulang: ${curTime}`);
         } else {
-          showScanModal('checkout','Absen Pulang',student.student_name,student.class_name,student.parent_phone,`Pulang: ${curTime}`);
+          showScanModal('checkout','Absen Pulang',student.student_name,student.class_name,student.parent_phone,student.photo_url,`Pulang: ${curTime}`);
         }
         await loadAllData();
-      } else showScanModal('error','Gagal',student.student_name,student.class_name,student.parent_phone,'Gagal menyimpan absen pulang');
+      } else showScanModal('error','Gagal',student.student_name,student.class_name,student.parent_phone,student.photo_url,'Gagal menyimpan absen pulang');
     } else {
-      showScanModal('warning','Sudah Absen Masuk',student.student_name,student.class_name,student.parent_phone,`Masuk: ${existing.check_in_time}`);
+      showScanModal('warning','Sudah Absen Masuk',student.student_name,student.class_name,student.parent_phone,student.photo_url,`Masuk: ${existing.check_in_time}`);
     }
   } else {
     const isLate = nowMin>lateLimit;
     const r=await dbCreate('attendance',{student_id:student.student_id,student_name:student.student_name,class_name:student.class_name,rfid:student.rfid,parent_phone:student.parent_phone,check_in_time:curTime,check_out_time:'',is_present:true,is_late:isLate,date:today,activity_type:'sekolah'});
     if(r.isOk){
       await loadAllData();
-      if(isLate) showScanModal('late','Hadir & Terlambat',student.student_name,student.class_name,student.parent_phone,`Masuk: ${curTime}`);
-      else       showScanModal('success','Hadir Tepat Waktu',student.student_name,student.class_name,student.parent_phone,`Masuk: ${curTime}`);
-    } else showScanModal('error','Gagal',student.student_name,student.class_name,student.parent_phone,'Gagal menyimpan absensi');
+      if(isLate) showScanModal('late','Hadir & Terlambat',student.student_name,student.class_name,student.parent_phone,student.photo_url,`Masuk: ${curTime}`);
+      else       showScanModal('success','Hadir Tepat Waktu',student.student_name,student.class_name,student.parent_phone,student.photo_url,`Masuk: ${curTime}`);
+    } else showScanModal('error','Gagal',student.student_name,student.class_name,student.parent_phone,student.photo_url,'Gagal menyimpan absensi');
   }
   focusRfidInput();
 }
 
-function showScanModal(type,title,name,cls,phone,msg) {
+function showScanModal(type,title,name,cls,phone,photoUrl,msg) {
   const cfgs={
     success:  {bg:'bg-emerald-500',iBg:'bg-emerald-100',iC:'text-emerald-600',sBg:'bg-emerald-100 text-emerald-700',icon:'M5 13l4 4L19 7'},
     late:     {bg:'bg-amber-500',  iBg:'bg-amber-100',  iC:'text-amber-600',  sBg:'bg-amber-100 text-amber-700',  icon:'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'},
@@ -1442,8 +1445,19 @@ function showScanModal(type,title,name,cls,phone,msg) {
   const c=cfgs[type];
   const modal=document.getElementById('scan-modal');
   document.getElementById('scan-modal-content').className=`w-full max-w-md rounded-3xl p-8 text-center modal-pop ${c.bg}`;
-  document.getElementById('scan-modal-icon').className=`w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center ${c.iBg}`;
-  document.getElementById('scan-modal-icon').innerHTML=`<svg class="w-12 h-12 ${c.iC}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${c.icon}"/></svg>`;
+  const iconEl = document.getElementById('scan-modal-icon');
+  const badgeEl = document.getElementById('scan-modal-badge');
+  if (photoUrl) {
+    iconEl.className = 'w-24 h-24 rounded-full flex items-center justify-center overflow-hidden bg-white';
+    const initial = (name||'?').charAt(0).toUpperCase();
+    iconEl.innerHTML = `<img src="${photoUrl}" class="w-full h-full object-cover" onerror="this.outerHTML='<span class=\\'text-3xl font-bold ${c.iC}\\'>${initial}</span>'">`;
+    badgeEl.className = `flex absolute -bottom-1 -right-1 w-9 h-9 rounded-full items-center justify-center border-4 border-white ${c.iBg}`;
+    badgeEl.innerHTML = `<svg class="w-5 h-5 ${c.iC}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="${c.icon}"/></svg>`;
+  } else {
+    iconEl.className=`w-24 h-24 rounded-full flex items-center justify-center ${c.iBg}`;
+    iconEl.innerHTML=`<svg class="w-12 h-12 ${c.iC}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${c.icon}"/></svg>`;
+    badgeEl.className = 'hidden';
+  }
   document.getElementById('scan-modal-title').className='text-2xl font-bold mb-2 text-white';
   document.getElementById('scan-modal-title').textContent=title;
   document.getElementById('scan-modal-name').className='text-lg mb-1 text-white/90';
