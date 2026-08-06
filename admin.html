@@ -8,6 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -263,9 +264,18 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6">
     <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
       <div><h2 class="text-2xl font-bold text-slate-800">Master Data Siswa</h2><p class="text-slate-500">Kelola data siswa dan kartu RFID</p></div>
-      <button onclick="openStudentModal()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>Tambah Siswa
-      </button>
+      <div class="flex items-center gap-2 flex-wrap">
+        <button onclick="downloadStudentTemplate()" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Unduh Template
+        </button>
+        <label class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3-3m0 0l3 3m-3-3v9m3-16l-3-3-3 3"/></svg>Upload Data
+          <input type="file" id="import-file-input" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleImportFileSelect(event)">
+        </label>
+        <button onclick="openStudentModal()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>Tambah Siswa
+        </button>
+      </div>
     </div>
     <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 mb-6">
       <div class="flex items-center gap-4 flex-wrap">
@@ -695,6 +705,28 @@
     </div>
     <form id="student-form" class="p-5 space-y-4">
       <input type="hidden" id="student-edit-id">
+
+      <!-- Foto Siswa -->
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Foto Siswa (opsional)</label>
+        <div class="flex items-center gap-3">
+          <div class="w-16 h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+            <img id="student-photo-preview" class="hidden w-full h-full object-cover" src="" alt="Preview">
+            <svg id="student-photo-placeholder" class="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <div class="flex-1 space-y-2">
+            <input type="text" id="student-photo-url" placeholder="Tempel link foto (https://...)" oninput="onPhotoUrlChange()"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200 cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3-3m0 0l3 3m-3-3v9m3-16l-3-3-3 3"/></svg>
+              <span id="student-photo-upload-label">Atau upload dari perangkat</span>
+              <input type="file" id="student-photo-file" accept="image/*" class="hidden" onchange="onPhotoFileSelected(event)">
+            </label>
+            <p class="text-[11px] text-slate-400">Foto yang diupload otomatis dikompres (maks ±1MB) supaya hemat penyimpanan.</p>
+          </div>
+        </div>
+      </div>
+
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
         <input type="text" id="student-name" required class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
@@ -718,6 +750,26 @@
         <button type="submit" class="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors">Simpan</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Import Preview Modal -->
+<div id="import-preview-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px)">
+  <div class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl max-h-[85vh] flex flex-col">
+    <div class="p-5 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+      <div>
+        <h3 class="text-lg font-semibold text-slate-800">Preview Data Import</h3>
+        <p id="import-summary" class="text-sm text-slate-500">--</p>
+      </div>
+      <button onclick="closeImportPreviewModal()" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="import-preview-body" class="p-5 overflow-y-auto flex-1"></div>
+    <div class="p-5 border-t border-slate-200 flex gap-3 flex-shrink-0">
+      <button type="button" onclick="closeImportPreviewModal()" class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-medium hover:bg-slate-50 transition-colors">Batal</button>
+      <button type="button" id="import-confirm-btn" onclick="confirmImport()" class="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors">Import Sekarang</button>
+    </div>
   </div>
 </div>
 
@@ -1937,7 +1989,7 @@ function renderStudents() {
   grid.innerHTML=fil.map(s=>`
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
       <div class="flex items-start justify-between mb-4">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-bold text-lg">${s.student_name.charAt(0).toUpperCase()}</div>
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-bold text-lg overflow-hidden">${s.photo_url?`<img src="${s.photo_url}" class="w-full h-full object-cover" onerror="this.style.display='none';this.parentElement.textContent='${s.student_name.charAt(0).toUpperCase()}'">`:s.student_name.charAt(0).toUpperCase()}</div>
         <div class="flex gap-1">
           <button onclick="editStudent('${s.__backendId}')" class="p-2 hover:bg-slate-100 rounded-lg" title="Edit">
             <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
@@ -1967,6 +2019,7 @@ function renderStudents() {
 function openStudentModal(editId=null) {
   document.getElementById('student-form').reset();
   document.getElementById('student-edit-id').value='';
+  resetPhotoPreview();
   if(editId){
     const s=students.find(x=>x.__backendId===editId);
     if(s){
@@ -1976,6 +2029,8 @@ function openStudentModal(editId=null) {
       document.getElementById('student-class').value=s.class_name;
       document.getElementById('student-rfid').value=s.rfid;
       document.getElementById('student-phone').value=s.parent_phone||'';
+      document.getElementById('student-photo-url').value=s.photo_url||'';
+      updatePhotoPreview(s.photo_url||'');
     }
   } else { document.getElementById('student-modal-title').textContent='Tambah Siswa'; }
   document.getElementById('student-modal').classList.replace('hidden','flex');
@@ -2030,6 +2085,83 @@ function printQr() {
   setTimeout(()=>pw.print(), 300);
 }
 
+// ---- Foto Siswa (URL / Upload) ----
+function resetPhotoPreview() {
+  document.getElementById('student-photo-preview').classList.add('hidden');
+  document.getElementById('student-photo-placeholder').classList.remove('hidden');
+  document.getElementById('student-photo-upload-label').textContent='Atau upload dari perangkat';
+}
+function updatePhotoPreview(url) {
+  const img = document.getElementById('student-photo-preview');
+  const ph  = document.getElementById('student-photo-placeholder');
+  if (url) { img.src=url; img.classList.remove('hidden'); ph.classList.add('hidden'); }
+  else     { img.classList.add('hidden'); ph.classList.remove('hidden'); }
+}
+function onPhotoUrlChange() {
+  updatePhotoPreview(document.getElementById('student-photo-url').value.trim());
+}
+// Kompres gambar di browser (resize + turunkan kualitas JPEG) sebelum upload,
+// supaya ukuran file tidak membebani database/storage Supabase.
+function compressImage(file, maxDimension=800, maxSizeMB=1) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Gagal membaca file'));
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('File bukan gambar yang valid'));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDimension || height > maxDimension) {
+          if (width >= height) { height = Math.round(height * maxDimension / width); width = maxDimension; }
+          else { width = Math.round(width * maxDimension / height); height = maxDimension; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        let quality = 0.85;
+        const tryEncode = () => {
+          canvas.toBlob((blob) => {
+            if (!blob) { reject(new Error('Gagal mengompres gambar')); return; }
+            if (blob.size <= maxSizeMB*1024*1024 || quality <= 0.4) {
+              resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), {type:'image/jpeg'}));
+            } else {
+              quality -= 0.15;
+              tryEncode();
+            }
+          }, 'image/jpeg', quality);
+        };
+        tryEncode();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function onPhotoFileSelected(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!dbClient) { showToast('Database belum terhubung','error'); return; }
+  const label = document.getElementById('student-photo-upload-label');
+  label.textContent = 'Mengompres foto...';
+  try {
+    const compressed = await compressImage(file, 800, 1);
+    label.textContent = 'Mengunggah...';
+    const path = `siswa_${Date.now()}_${Math.random().toString(36).slice(2,8)}.jpg`;
+    const { error } = await dbClient.storage.from('siswa-photos').upload(path, compressed, {cacheControl:'3600', upsert:false, contentType:'image/jpeg'});
+    if (error) throw error;
+    const { data } = dbClient.storage.from('siswa-photos').getPublicUrl(path);
+    document.getElementById('student-photo-url').value = data.publicUrl;
+    updatePhotoPreview(data.publicUrl);
+    const sizeKB = Math.round(compressed.size/1024);
+    label.textContent = `Foto berhasil diunggah ✓ (~${sizeKB} KB)`;
+  } catch(err) {
+    console.error(err);
+    showToast('Gagal upload foto. Pastikan bucket "siswa-photos" sudah dibuat di Supabase.','error');
+    label.textContent = 'Atau upload dari perangkat';
+  }
+}
+
 async function saveStudent(e) {
   e.preventDefault();
   if(!dbClient){showToast('Database belum terhubung','error');return;}
@@ -2038,15 +2170,16 @@ async function saveStudent(e) {
   const cls   =document.getElementById('student-class').value;
   const rfid  =document.getElementById('student-rfid').value.trim();
   const phone =document.getElementById('student-phone').value.trim();
+  const photoUrl = document.getElementById('student-photo-url').value.trim();
   if(!name||!cls||rfid.length!==10||!phone){showToast('Mohon lengkapi semua data dengan benar','error');return;}
   const dup=students.find(s=>s.rfid===rfid&&s.__backendId!==editId);
   if(dup){showToast('RFID sudah terdaftar untuk siswa lain','error');return;}
   if(editId){
-    const r=await dbUpdate('students',editId,{student_name:name,class_name:cls,rfid,parent_phone:phone});
+    const r=await dbUpdate('students',editId,{student_name:name,class_name:cls,rfid,parent_phone:phone,photo_url:photoUrl});
     if(r.isOk){showToast('Data siswa berhasil diperbarui','success');closeStudentModal();await loadAllData();}
     else showToast('Gagal memperbarui data','error');
   } else {
-    const r=await dbCreate('students',{student_id:'STD'+Date.now(),student_name:name,class_name:cls,rfid,parent_phone:phone});
+    const r=await dbCreate('students',{student_id:'STD'+Date.now(),student_name:name,class_name:cls,rfid,parent_phone:phone,photo_url:photoUrl});
     if(r.isOk){showToast('Siswa berhasil ditambahkan','success');closeStudentModal();await loadAllData();}
     else showToast('Gagal menambahkan siswa','error');
   }
@@ -2061,6 +2194,156 @@ function confirmDeleteStudent(id,name) {
     closeDeleteModal();
   };
   document.getElementById('delete-modal').classList.replace('hidden','flex');
+}
+
+// ========== IMPORT TEMPLATE SISWA & KELAS ==========
+const IMPORT_HEADERS = ['Nama Siswa','Kelas','RFID','No HP Orang Tua','Link Foto (opsional)'];
+
+function downloadStudentTemplate() {
+  const wsData = [
+    IMPORT_HEADERS,
+    ['Ahmad Fauzi','X-A','1234567890','081234567890','https://contoh.com/foto-ahmad.jpg'],
+    ['Siti Aisyah','X-A','1234567891','081234567891',''],
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  ws['!cols'] = [{wch:22},{wch:12},{wch:14},{wch:16},{wch:32}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Data Siswa');
+  XLSX.writeFile(wb, 'Template_Data_Siswa.xlsx');
+  showToast('Template berhasil diunduh','success');
+}
+
+let pendingImportRows = [];
+
+function handleImportFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try {
+      const wb = XLSX.read(evt.target.result, {type:'binary'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, defval:''});
+      processImportRows(rows);
+    } catch(err) {
+      console.error(err);
+      showToast('Gagal membaca file. Pastikan formatnya .xlsx, .xls, atau .csv','error');
+    }
+    e.target.value = '';
+  };
+  reader.readAsBinaryString(file);
+}
+
+function processImportRows(rows) {
+  if (!rows || rows.length<2) { showToast('File kosong atau tidak ada data','error'); return; }
+  // Lewati baris header (baris pertama)
+  const dataRows = rows.slice(1).filter(r => r.some(c => String(c||'').trim()!==''));
+  if (dataRows.length===0) { showToast('Tidak ada baris data yang bisa dibaca','error'); return; }
+
+  const existingRfids = new Set(students.map(s=>s.rfid));
+  const existingClasses = new Set(classes.map(c=>c.class_name));
+  const seenRfidsInFile = new Set();
+  const newClassNames = new Set();
+
+  const parsed = dataRows.map((r, idx) => {
+    const name  = String(r[0]||'').trim();
+    const cls   = String(r[1]||'').trim();
+    const rfid  = String(r[2]||'').trim();
+    const phone = String(r[3]||'').trim();
+    const photo = String(r[4]||'').trim();
+    const rowNum = idx+2; // +2 karena baris 1 = header, index mulai 0
+    let status = 'ok', reason = '';
+    if (!name || !cls || !rfid) { status='error'; reason='Nama/Kelas/RFID kosong'; }
+    else if (existingRfids.has(rfid)) { status='error'; reason='RFID sudah terdaftar'; }
+    else if (seenRfidsInFile.has(rfid)) { status='error'; reason='RFID duplikat di file ini'; }
+    else if (rfid.length!==10) { status='warning'; reason='RFID bukan 10 digit — tetap bisa diimport'; }
+    if (status!=='error') seenRfidsInFile.add(rfid);
+    if (status!=='error' && cls && !existingClasses.has(cls)) newClassNames.add(cls);
+    return { rowNum, name, cls, rfid, phone, photo, status, reason };
+  });
+
+  pendingImportRows = parsed;
+  renderImportPreview(parsed, newClassNames);
+  document.getElementById('import-preview-modal').classList.replace('hidden','flex');
+}
+
+function renderImportPreview(parsed, newClassNames) {
+  const okRows    = parsed.filter(r=>r.status!=='error');
+  const errorRows = parsed.filter(r=>r.status==='error');
+  document.getElementById('import-summary').textContent =
+    `${okRows.length} siap diimport, ${errorRows.length} dilewati (error)${newClassNames.size?`, ${newClassNames.size} kelas baru akan dibuat`:''}`;
+
+  const classNote = newClassNames.size
+    ? `<div class="mb-4 p-3 rounded-xl bg-blue-50 border border-blue-100 text-sm text-blue-700">
+         <b>Kelas baru akan otomatis dibuat:</b> ${[...newClassNames].join(', ')}
+       </div>` : '';
+
+  const rowsHtml = parsed.map(r => {
+    const badge = r.status==='ok'
+      ? '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Siap</span>'
+      : r.status==='warning'
+      ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">${r.reason}</span>`
+      : `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">${r.reason}</span>`;
+    return `<tr class="border-b border-slate-100">
+      <td class="px-3 py-2 text-xs text-slate-400">${r.rowNum}</td>
+      <td class="px-3 py-2 text-sm text-slate-700">${r.name||'-'}</td>
+      <td class="px-3 py-2 text-sm text-slate-500">${r.cls||'-'}</td>
+      <td class="px-3 py-2 text-sm font-mono text-slate-500">${r.rfid||'-'}</td>
+      <td class="px-3 py-2">${badge}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('import-preview-body').innerHTML = `
+    ${classNote}
+    <div class="overflow-x-auto border border-slate-200 rounded-xl">
+      <table class="w-full">
+        <thead class="bg-slate-50"><tr>
+          <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">No</th>
+          <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">Nama</th>
+          <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">Kelas</th>
+          <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">RFID</th>
+          <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">Status</th>
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>`;
+
+  const confirmBtn = document.getElementById('import-confirm-btn');
+  confirmBtn.disabled = okRows.length===0;
+  confirmBtn.textContent = okRows.length ? `Import ${okRows.length} Siswa` : 'Tidak Ada Data Valid';
+}
+
+function closeImportPreviewModal() {
+  document.getElementById('import-preview-modal').classList.replace('flex','hidden');
+  pendingImportRows = [];
+}
+
+async function confirmImport() {
+  if (!dbClient) { showToast('Database belum terhubung','error'); return; }
+  const okRows = pendingImportRows.filter(r=>r.status!=='error');
+  if (okRows.length===0) return;
+  const btn = document.getElementById('import-confirm-btn');
+  btn.disabled = true; btn.textContent = 'Mengimport...';
+
+  // 1) Buat kelas baru yang belum ada
+  const existingClasses = new Set(classes.map(c=>c.class_name));
+  const newClassNames = [...new Set(okRows.map(r=>r.cls))].filter(c=>c && !existingClasses.has(c));
+  for (const cn of newClassNames) { await dbCreate('classes', {class_name: cn}); }
+
+  // 2) Buat siswa satu-satu (RFID unique, jadi tidak bisa batch insert dengan aman)
+  let successCount = 0, failCount = 0;
+  for (const r of okRows) {
+    const res = await dbCreate('students', {
+      student_id: 'STD'+Date.now()+Math.random().toString(36).slice(2,6),
+      student_name: r.name, class_name: r.cls, rfid: r.rfid,
+      parent_phone: r.phone, photo_url: r.photo
+    });
+    if (res.isOk) successCount++; else failCount++;
+  }
+
+  await loadAllData();
+  closeImportPreviewModal();
+  showToast(`Import selesai: ${successCount} siswa ditambahkan${failCount?`, ${failCount} gagal`:''}`, failCount?'error':'success');
 }
 
 // ========== SETTINGS PAGE ==========
