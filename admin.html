@@ -749,8 +749,8 @@
         <p class="text-[11px] text-slate-400 mt-1">Nomor untuk kartu RFID fisik. Kalau belum punya kartunya, klik "Buat Otomatis" saja — tidak perlu mengarang angka sendiri.</p>
       </div>
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">NISN (untuk kode QR)</label>
-        <input type="text" id="student-nisn" maxlength="20" placeholder="Contoh: 0051234567" class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+        <label class="block text-sm font-medium text-slate-700 mb-1">NIS/NISN (untuk kode QR)</label>
+        <input type="text" id="student-nisn" maxlength="30" placeholder="Contoh: 2140/3083045603" class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
         <p class="text-[11px] text-slate-400 mt-1">Dipakai sebagai isi kode QR yang dicetak/dibaca kamera. Kalau dikosongkan, QR akan pakai nomor RFID di atas sebagai gantinya.</p>
       </div>
       <div>
@@ -2021,7 +2021,7 @@ function renderStudents() {
       ${s.nisn?`<div class="flex items-center gap-2 px-3 py-2 bg-purple-50 rounded-lg border border-purple-100 mb-2">
         <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
         <span class="font-mono text-sm text-purple-700">${s.nisn}</span>
-        <span class="ml-auto text-[10px] font-semibold text-purple-400 uppercase">NISN/QR</span>
+        <span class="ml-auto text-[10px] font-semibold text-purple-400 uppercase">NIS/NISN/QR</span>
       </div>`:''}
       <div class="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-100">
         <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
@@ -2066,7 +2066,7 @@ function openQrModal(id) {
   const qrValue = s.nisn ? s.nisn : s.rfid;
   document.getElementById('qr-modal-name').textContent = s.student_name;
   document.getElementById('qr-modal-class').textContent = s.class_name||'-';
-  document.getElementById('qr-modal-code').textContent = `${qrValue} ${s.nisn?'(NISN)':'(RFID — NISN belum diisi)'}`;
+  document.getElementById('qr-modal-code').textContent = `${qrValue} ${s.nisn?'(NIS/NISN)':'(RFID — NIS/NISN belum diisi)'}`;
   const canvas = document.getElementById('qr-canvas');
   if (window.QRCode && QRCode.toCanvas) {
     QRCode.toCanvas(canvas, qrValue, { width: 200, margin: 1 }, (err)=>{ if(err) console.error(err); });
@@ -2211,7 +2211,7 @@ async function saveStudent(e) {
   if(dup){showToast('RFID sudah terdaftar untuk siswa lain','error');return;}
   if(nisn){
     const dupNisn=students.find(s=>s.nisn===nisn&&s.__backendId!==editId);
-    if(dupNisn){showToast('NISN sudah terdaftar untuk siswa lain','error');return;}
+    if(dupNisn){showToast('NIS/NISN sudah terdaftar untuk siswa lain','error');return;}
   }
   if(editId){
     const r=await dbUpdate('students',editId,{student_name:name,class_name:cls,rfid,nisn,parent_phone:phone,photo_url:photoUrl});
@@ -2236,13 +2236,13 @@ function confirmDeleteStudent(id,name) {
 }
 
 // ========== IMPORT TEMPLATE SISWA & KELAS ==========
-const IMPORT_HEADERS = ['Nama Siswa','Kelas','RFID (kosongkan = otomatis)','NISN (untuk QR, opsional)','No HP Orang Tua','Link Foto (opsional)'];
+const IMPORT_HEADERS = ['Nama Siswa','Kelas','RFID (kosongkan = otomatis)','NIS/NISN (untuk QR, opsional)','No HP Orang Tua','Link Foto (opsional)'];
 
 function downloadStudentTemplate() {
   const wsData = [
     IMPORT_HEADERS,
-    ['Ahmad Fauzi','X-A','1234567890','0051234567','081234567890','https://contoh.com/foto-ahmad.jpg'],
-    ['Siti Aisyah','X-A','','0051234568','081234567891',''],
+    ['Ahmad Fauzi','X-A','1234567890','2140/3083045601','081234567890','https://contoh.com/foto-ahmad.jpg'],
+    ['Siti Aisyah','X-A','','2140/3083045602','081234567891',''],
   ];
   const ws = XLSX.utils.aoa_to_sheet(wsData);
   ws['!cols'] = [{wch:22},{wch:12},{wch:24},{wch:20},{wch:16},{wch:32}];
@@ -2305,8 +2305,8 @@ function processImportRows(rows) {
     if (!name || !cls) { status='error'; reason='Nama/Kelas kosong'; }
     else if (existingRfids.has(rfid)) { status='error'; reason='RFID sudah terdaftar'; }
     else if (seenRfidsInFile.has(rfid)) { status='error'; reason='RFID duplikat di file ini'; }
-    else if (nisn && existingNisns.has(nisn)) { status='error'; reason='NISN sudah terdaftar'; }
-    else if (nisn && seenNisnsInFile.has(nisn)) { status='error'; reason='NISN duplikat di file ini'; }
+    else if (nisn && existingNisns.has(nisn)) { status='error'; reason='NIS/NISN sudah terdaftar'; }
+    else if (nisn && seenNisnsInFile.has(nisn)) { status='error'; reason='NIS/NISN duplikat di file ini'; }
     else if (!autoGenerated && rfid.length!==10) { status='warning'; reason='RFID bukan 10 digit — tetap bisa diimport'; }
     else if (autoGenerated) { status='ok'; reason='Kode RFID dibuat otomatis'; }
     if (status!=='error') { seenRfidsInFile.add(rfid); if (nisn) seenNisnsInFile.add(nisn); }
@@ -2355,7 +2355,7 @@ function renderImportPreview(parsed, newClassNames) {
           <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">Nama</th>
           <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">Kelas</th>
           <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">RFID</th>
-          <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">NISN</th>
+          <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">NIS/NISN</th>
           <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">Status</th>
         </tr></thead>
         <tbody>${rowsHtml}</tbody>
