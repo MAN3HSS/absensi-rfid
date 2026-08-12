@@ -1335,7 +1335,7 @@ async function processScan(code) {
   if (!code || code.length<4) return;
   if (!dbClient) { showToast('Database belum terhubung','error'); focusRfidInput(); return; }
 
-  const student = students.find(s=>s.rfid===code);
+  const student = students.find(s=>s.rfid===code) || students.find(s=>s.nisn && s.nisn===code);
   if (!student) { showScanModal('error','Kartu/Kode Tidak Terdaftar',code,'','',null,'Tidak ditemukan di data siswa'); focusRfidInput(); return; }
 
   const activity = getActiveActivity();
@@ -1657,29 +1657,88 @@ let cameraScanCount = 0;
 let lastCameraCode = '';
 let lastCameraScanAt = 0;
 let currentCameraFacing = 'environment';
+let usingNativeDetector = false;
+let nativeStream = null;
+let nativeVideoEl = null;
+let nativeDetector = null;
+let nativeRAF = null;
 
 function toggleInlineCamera() {
   if (cameraModalOpen) closeInlineCamera(); else openInlineCamera();
 }
 
-function startCameraScanner(facing) {
+function handleDetectedCode(rawCode) {
+  const code = String(rawCode||'').trim();
+  if (!code) return;
+  const now = Date.now();
+  // Cegah kartu/QR yang sama terbaca berulang kali selagi masih di depan kamera
+  if (code===lastCameraCode && (now-lastCameraScanAt)<3000) return;
+  lastCameraCode = code;
+  lastCameraScanAt = now;
+  cameraScanCount++;
+  const cEl = document.getElementById('camera-scan-count');
+  if (cEl) cEl.textContent = String(cameraScanCount);
+  processScan(code); // kamera TETAP terbuka, siap untuk siswa berikutnya
+}
+
+// Jalur cepat: pakai BarcodeDetector bawaan browser (Chrome/Edge Android & desktop terbaru).
+// Jauh lebih responsif dibanding library JS biasa karena decode-nya diproses native oleh browser.
+async function startNativeBarcodeScanner(facing) {
+  let formats = ['qr_code'];
+  try {
+    const supported = await BarcodeDetector.getSupportedFormats();
+    if (supported.includes('qr_code')) formats = ['qr_code','ean_13','code_128'].filter(f=>supported.includes(f));
+  } catch(e) {}
+  nativeDetector = new BarcodeDetector({ formats });
+
+  nativeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing } });
+  const container = document.getElementById('qr-reader');
+  container.innerHTML = '';
+  nativeVideoEl = document.createElement('video');
+  nativeVideoEl.setAttribute('playsinline','');
+  nativeVideoEl.muted = true;
+  nativeVideoEl.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+  container.appendChild(nativeVideoEl);
+  nativeVideoEl.srcObject = nativeStream;
+  await nativeVideoEl.play();
+
+  const loop = async () => {
+    if (!nativeVideoEl) return; // kamera sudah ditutup
+    try {
+      const codes = await nativeDetector.detect(nativeVideoEl);
+      if (codes && codes.length>0) handleDetectedCode(codes[0].rawValue);
+    } catch(e) { /* lewati error per-frame, coba lagi frame berikutnya */ }
+    nativeRAF = requestAnimationFrame(loop);
+  };
+  nativeRAF = requestAnimationFrame(loop);
+}
+
+function stopNativeBarcodeScanner() {
+  if (nativeRAF) cancelAnimationFrame(nativeRAF);
+  nativeRAF = null;
+  if (nativeStream) { nativeStream.getTracks().forEach(t=>t.stop()); nativeStream = null; }
+  nativeVideoEl = null;
+  nativeDetector = null;
+}
+
+// Jalur cadangan: library html5-qrcode (dipakai kalau browser tidak mendukung BarcodeDetector, mis. Safari/iOS/Firefox)
+function startHtml5QrScanner(facing) {
   html5QrInstance = new Html5Qrcode('qr-reader');
   return html5QrInstance.start(
     { facingMode: facing },
     { fps: 10, qrbox: { width: 240, height: 240 } },
-    (decodedText) => {
-      const code = decodedText.trim();
-      const now = Date.now();
-      // Cegah kartu yang sama terbaca berulang kali selagi masih di depan kamera
-      if (code===lastCameraCode && (now-lastCameraScanAt)<3000) return;
-      lastCameraCode = code;
-      lastCameraScanAt = now;
-      cameraScanCount++;
-      document.getElementById('camera-scan-count').textContent = String(cameraScanCount);
-      processScan(code); // kamera TETAP terbuka, siap untuk siswa berikutnya
-    },
+    (decodedText) => handleDetectedCode(decodedText),
     () => {}
   );
+}
+
+async function startCameraScanner(facing) {
+  if ('BarcodeDetector' in window) {
+    try { await startNativeBarcodeScanner(facing); usingNativeDetector = true; return; }
+    catch(e) { console.warn('BarcodeDetector gagal, pakai fallback', e); stopNativeBarcodeScanner(); }
+  }
+  usingNativeDetector = false;
+  return startHtml5QrScanner(facing);
 }
 
 function openInlineCamera() {
@@ -1697,13 +1756,11 @@ function openInlineCamera() {
 }
 
 async function switchCameraFacing() {
-  if (!cameraModalOpen || !html5QrInstance) return;
+  if (!cameraModalOpen) return;
   currentCameraFacing = currentCameraFacing==='environment' ? 'user' : 'environment';
   document.getElementById('camera-facing-label').textContent = currentCameraFacing==='environment' ? 'Belakang' : 'Depan';
-  try {
-    await html5QrInstance.stop();
-    await html5QrInstance.clear();
-  } catch(e) {}
+  if (usingNativeDetector) stopNativeBarcodeScanner();
+  else if (html5QrInstance) { try { await html5QrInstance.stop(); await html5QrInstance.clear(); } catch(e){} }
   startCameraScanner(currentCameraFacing).catch(() => {
     showToast('Tidak dapat mengganti kamera, mencoba kembali...','error');
     // fallback kembali ke kamera sebelumnya kalau device tidak punya 2 kamera
@@ -1717,10 +1774,12 @@ function closeInlineCamera() {
   document.getElementById('camera-inline').classList.add('hidden');
   document.getElementById('camera-scan-btn-label').textContent = 'Pakai Kamera (Scan Barcode/QR)';
   cameraModalOpen = false;
+  if (usingNativeDetector) stopNativeBarcodeScanner();
   if (html5QrInstance) {
     html5QrInstance.stop().then(()=>html5QrInstance.clear()).catch(()=>{});
     html5QrInstance = null;
   }
+  usingNativeDetector = false;
   focusRfidInput();
 }
 
