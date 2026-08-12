@@ -738,8 +738,20 @@
         </select>
       </div>
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">RFID (10 digit)</label>
-        <input type="text" id="student-rfid" required maxlength="10" pattern="[0-9]{10}" class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Nomor Kartu RFID (10 digit)</label>
+        <div class="flex gap-2">
+          <input type="text" id="student-rfid" required maxlength="10" pattern="[0-9]{10}" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+          <button type="button" onclick="generateRfidCode()" title="Buat kode otomatis" class="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-200 transition-colors flex items-center gap-1.5 flex-shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Buat Otomatis
+          </button>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1">Nomor untuk kartu RFID fisik. Kalau belum punya kartunya, klik "Buat Otomatis" saja — tidak perlu mengarang angka sendiri.</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">NISN (untuk kode QR)</label>
+        <input type="text" id="student-nisn" maxlength="20" placeholder="Contoh: 0051234567" class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+        <p class="text-[11px] text-slate-400 mt-1">Dipakai sebagai isi kode QR yang dicetak/dibaca kamera. Kalau dikosongkan, QR akan pakai nomor RFID di atas sebagai gantinya.</p>
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">No HP Orang Tua</label>
@@ -1976,7 +1988,7 @@ function renderStudents() {
   const search=(document.getElementById('search-student').value||'').toLowerCase();
   const fc=document.getElementById('filter-student-class').value;
   let fil=students;
-  if(search) fil=fil.filter(s=>s.student_name.toLowerCase().includes(search)||s.rfid.includes(search));
+  if(search) fil=fil.filter(s=>s.student_name.toLowerCase().includes(search)||s.rfid.includes(search)||(s.nisn&&s.nisn.includes(search)));
   if(fc)     fil=fil.filter(s=>s.class_name===fc);
   const grid=document.getElementById('students-grid');
   if(fil.length===0){
@@ -2004,7 +2016,13 @@ function renderStudents() {
       <div class="flex items-center gap-2 px-3 py-2 bg-slate-100 rounded-lg mb-2">
         <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
         <span class="font-mono text-sm text-slate-600">${s.rfid}</span>
+        <span class="ml-auto text-[10px] font-semibold text-slate-400 uppercase">RFID</span>
       </div>
+      ${s.nisn?`<div class="flex items-center gap-2 px-3 py-2 bg-purple-50 rounded-lg border border-purple-100 mb-2">
+        <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
+        <span class="font-mono text-sm text-purple-700">${s.nisn}</span>
+        <span class="ml-auto text-[10px] font-semibold text-purple-400 uppercase">NISN/QR</span>
+      </div>`:''}
       <div class="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-100">
         <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
         <span class="text-sm text-blue-700">${s.parent_phone||'N/A'}</span>
@@ -2028,6 +2046,7 @@ function openStudentModal(editId=null) {
       document.getElementById('student-name').value=s.student_name;
       document.getElementById('student-class').value=s.class_name;
       document.getElementById('student-rfid').value=s.rfid;
+      document.getElementById('student-nisn').value=s.nisn||'';
       document.getElementById('student-phone').value=s.parent_phone||'';
       document.getElementById('student-photo-url').value=s.photo_url||'';
       updatePhotoPreview(s.photo_url||'');
@@ -2044,12 +2063,13 @@ function openQrModal(id) {
   const s = students.find(x=>x.__backendId===id);
   if (!s) return;
   qrModalStudentId = id;
+  const qrValue = s.nisn ? s.nisn : s.rfid;
   document.getElementById('qr-modal-name').textContent = s.student_name;
   document.getElementById('qr-modal-class').textContent = s.class_name||'-';
-  document.getElementById('qr-modal-code').textContent = s.rfid;
+  document.getElementById('qr-modal-code').textContent = `${qrValue} ${s.nisn?'(NISN)':'(RFID — NISN belum diisi)'}`;
   const canvas = document.getElementById('qr-canvas');
   if (window.QRCode && QRCode.toCanvas) {
-    QRCode.toCanvas(canvas, s.rfid, { width: 200, margin: 1 }, (err)=>{ if(err) console.error(err); });
+    QRCode.toCanvas(canvas, qrValue, { width: 200, margin: 1 }, (err)=>{ if(err) console.error(err); });
   }
   document.getElementById('qr-modal').classList.replace('hidden','flex');
 }
@@ -2058,6 +2078,7 @@ function closeQrModal() { document.getElementById('qr-modal').classList.replace(
 function printQr() {
   const s = students.find(x=>x.__backendId===qrModalStudentId);
   if (!s) return;
+  const qrValue = s.nisn ? s.nisn : s.rfid;
   const canvas = document.getElementById('qr-canvas');
   const dataUrl = canvas.toDataURL('image/png');
   const sName = settings.school_name||'MAN 3 Hulu Sungai Selatan';
@@ -2078,7 +2099,7 @@ function printQr() {
     <h2>${s.student_name}</h2>
     <p>${s.class_name||'-'}</p>
     <img src="${dataUrl}" alt="QR Code">
-    <div class="code">${s.rfid}</div>
+    <div class="code">${qrValue}</div>
   </div>
   </body></html>`);
   pw.document.close();
@@ -2086,6 +2107,19 @@ function printQr() {
 }
 
 // ---- Foto Siswa (URL / Upload) ----
+// ---- Generate Kode RFID/QR Otomatis ----
+function generateUniqueCode() {
+  const existing = new Set(students.map(s=>s.rfid));
+  let code;
+  do {
+    code = String(Math.floor(1000000000 + Math.random()*9000000000)); // 10 digit acak
+  } while (existing.has(code));
+  return code;
+}
+function generateRfidCode() {
+  document.getElementById('student-rfid').value = generateUniqueCode();
+}
+
 function resetPhotoPreview() {
   document.getElementById('student-photo-preview').classList.add('hidden');
   document.getElementById('student-photo-placeholder').classList.remove('hidden');
@@ -2169,17 +2203,22 @@ async function saveStudent(e) {
   const name  =document.getElementById('student-name').value.trim();
   const cls   =document.getElementById('student-class').value;
   const rfid  =document.getElementById('student-rfid').value.trim();
+  const nisn  =document.getElementById('student-nisn').value.trim();
   const phone =document.getElementById('student-phone').value.trim();
   const photoUrl = document.getElementById('student-photo-url').value.trim();
   if(!name||!cls||rfid.length!==10||!phone){showToast('Mohon lengkapi semua data dengan benar','error');return;}
   const dup=students.find(s=>s.rfid===rfid&&s.__backendId!==editId);
   if(dup){showToast('RFID sudah terdaftar untuk siswa lain','error');return;}
+  if(nisn){
+    const dupNisn=students.find(s=>s.nisn===nisn&&s.__backendId!==editId);
+    if(dupNisn){showToast('NISN sudah terdaftar untuk siswa lain','error');return;}
+  }
   if(editId){
-    const r=await dbUpdate('students',editId,{student_name:name,class_name:cls,rfid,parent_phone:phone,photo_url:photoUrl});
+    const r=await dbUpdate('students',editId,{student_name:name,class_name:cls,rfid,nisn,parent_phone:phone,photo_url:photoUrl});
     if(r.isOk){showToast('Data siswa berhasil diperbarui','success');closeStudentModal();await loadAllData();}
     else showToast('Gagal memperbarui data','error');
   } else {
-    const r=await dbCreate('students',{student_id:'STD'+Date.now(),student_name:name,class_name:cls,rfid,parent_phone:phone,photo_url:photoUrl});
+    const r=await dbCreate('students',{student_id:'STD'+Date.now(),student_name:name,class_name:cls,rfid,nisn,parent_phone:phone,photo_url:photoUrl});
     if(r.isOk){showToast('Siswa berhasil ditambahkan','success');closeStudentModal();await loadAllData();}
     else showToast('Gagal menambahkan siswa','error');
   }
@@ -2197,16 +2236,16 @@ function confirmDeleteStudent(id,name) {
 }
 
 // ========== IMPORT TEMPLATE SISWA & KELAS ==========
-const IMPORT_HEADERS = ['Nama Siswa','Kelas','RFID','No HP Orang Tua','Link Foto (opsional)'];
+const IMPORT_HEADERS = ['Nama Siswa','Kelas','RFID (kosongkan = otomatis)','NISN (untuk QR, opsional)','No HP Orang Tua','Link Foto (opsional)'];
 
 function downloadStudentTemplate() {
   const wsData = [
     IMPORT_HEADERS,
-    ['Ahmad Fauzi','X-A','1234567890','081234567890','https://contoh.com/foto-ahmad.jpg'],
-    ['Siti Aisyah','X-A','1234567891','081234567891',''],
+    ['Ahmad Fauzi','X-A','1234567890','0051234567','081234567890','https://contoh.com/foto-ahmad.jpg'],
+    ['Siti Aisyah','X-A','','0051234568','081234567891',''],
   ];
   const ws = XLSX.utils.aoa_to_sheet(wsData);
-  ws['!cols'] = [{wch:22},{wch:12},{wch:14},{wch:16},{wch:32}];
+  ws['!cols'] = [{wch:22},{wch:12},{wch:24},{wch:20},{wch:16},{wch:32}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Data Siswa');
   XLSX.writeFile(wb, 'Template_Data_Siswa.xlsx');
@@ -2241,25 +2280,38 @@ function processImportRows(rows) {
   if (dataRows.length===0) { showToast('Tidak ada baris data yang bisa dibaca','error'); return; }
 
   const existingRfids = new Set(students.map(s=>s.rfid));
+  const existingNisns = new Set(students.filter(s=>s.nisn).map(s=>s.nisn));
   const existingClasses = new Set(classes.map(c=>c.class_name));
   const seenRfidsInFile = new Set();
+  const seenNisnsInFile = new Set();
   const newClassNames = new Set();
 
   const parsed = dataRows.map((r, idx) => {
     const name  = String(r[0]||'').trim();
     const cls   = String(r[1]||'').trim();
-    const rfid  = String(r[2]||'').trim();
-    const phone = String(r[3]||'').trim();
-    const photo = String(r[4]||'').trim();
+    let   rfid  = String(r[2]||'').trim();
+    const nisn  = String(r[3]||'').trim();
+    const phone = String(r[4]||'').trim();
+    const photo = String(r[5]||'').trim();
     const rowNum = idx+2; // +2 karena baris 1 = header, index mulai 0
     let status = 'ok', reason = '';
-    if (!name || !cls || !rfid) { status='error'; reason='Nama/Kelas/RFID kosong'; }
+    let autoGenerated = false;
+    if (!rfid) {
+      // RFID dikosongkan di Excel -> buatkan kode otomatis, tidak dianggap error
+      do { rfid = String(Math.floor(1000000000 + Math.random()*9000000000)); }
+      while (existingRfids.has(rfid) || seenRfidsInFile.has(rfid));
+      autoGenerated = true;
+    }
+    if (!name || !cls) { status='error'; reason='Nama/Kelas kosong'; }
     else if (existingRfids.has(rfid)) { status='error'; reason='RFID sudah terdaftar'; }
     else if (seenRfidsInFile.has(rfid)) { status='error'; reason='RFID duplikat di file ini'; }
-    else if (rfid.length!==10) { status='warning'; reason='RFID bukan 10 digit — tetap bisa diimport'; }
-    if (status!=='error') seenRfidsInFile.add(rfid);
+    else if (nisn && existingNisns.has(nisn)) { status='error'; reason='NISN sudah terdaftar'; }
+    else if (nisn && seenNisnsInFile.has(nisn)) { status='error'; reason='NISN duplikat di file ini'; }
+    else if (!autoGenerated && rfid.length!==10) { status='warning'; reason='RFID bukan 10 digit — tetap bisa diimport'; }
+    else if (autoGenerated) { status='ok'; reason='Kode RFID dibuat otomatis'; }
+    if (status!=='error') { seenRfidsInFile.add(rfid); if (nisn) seenNisnsInFile.add(nisn); }
     if (status!=='error' && cls && !existingClasses.has(cls)) newClassNames.add(cls);
-    return { rowNum, name, cls, rfid, phone, photo, status, reason };
+    return { rowNum, name, cls, rfid, nisn, phone, photo, status, reason, autoGenerated };
   });
 
   pendingImportRows = parsed;
@@ -2288,7 +2340,8 @@ function renderImportPreview(parsed, newClassNames) {
       <td class="px-3 py-2 text-xs text-slate-400">${r.rowNum}</td>
       <td class="px-3 py-2 text-sm text-slate-700">${r.name||'-'}</td>
       <td class="px-3 py-2 text-sm text-slate-500">${r.cls||'-'}</td>
-      <td class="px-3 py-2 text-sm font-mono text-slate-500">${r.rfid||'-'}</td>
+      <td class="px-3 py-2 text-sm font-mono text-slate-500">${r.rfid||'-'}${r.autoGenerated?' <span class="text-[10px] text-blue-500">(auto)</span>':''}</td>
+      <td class="px-3 py-2 text-sm font-mono text-slate-500">${r.nisn||'-'}</td>
       <td class="px-3 py-2">${badge}</td>
     </tr>`;
   }).join('');
@@ -2302,6 +2355,7 @@ function renderImportPreview(parsed, newClassNames) {
           <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">Nama</th>
           <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">Kelas</th>
           <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">RFID</th>
+          <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">NISN</th>
           <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">Status</th>
         </tr></thead>
         <tbody>${rowsHtml}</tbody>
@@ -2335,7 +2389,7 @@ async function confirmImport() {
   for (const r of okRows) {
     const res = await dbCreate('students', {
       student_id: 'STD'+Date.now()+Math.random().toString(36).slice(2,6),
-      student_name: r.name, class_name: r.cls, rfid: r.rfid,
+      student_name: r.name, class_name: r.cls, rfid: r.rfid, nisn: r.nisn,
       parent_phone: r.phone, photo_url: r.photo
     });
     if (res.isOk) successCount++; else failCount++;
